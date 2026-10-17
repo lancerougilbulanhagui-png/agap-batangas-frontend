@@ -35,14 +35,42 @@ export default function App() {
       if (data) {
         setUserProfile(data);
         setUserRole(data.user_role || 'GUEST');
+      } else {
+        // Auto-register new guest device into database on app launch
+        const profileId = 'USER-' + Math.floor(100000 + Math.random() * 900000);
+        const newGuestProfile = {
+          id: profileId,
+          device_id: localDeviceId,
+          username: 'Guest User',
+          full_name: 'Unverified Guest',
+          user_role: 'GUEST',
+          verification_status: 'GUEST',
+          barangay: 'Batangas City'
+        };
+
+        const { data: createdProfile, error } = await supabase
+          .from('profiles')
+          .insert([newGuestProfile])
+          .select()
+          .maybeSingle();
+
+        if (!error && createdProfile) {
+          setUserProfile(createdProfile);
+          setUserRole('GUEST');
+        } else if (error) {
+          // Fallback simple insert if .select() not supported by RLS
+          await supabase.from('profiles').insert([newGuestProfile]);
+          setUserProfile(newGuestProfile);
+          setUserRole('GUEST');
+        }
       }
     } catch (err) {
-      console.log('No profile found yet for this device.');
+      console.log('Device registration check:', err.message);
     }
   };
 
   const handleResidentAccess = () => {
-    if (userProfile && userProfile.full_name) {
+    if (userProfile && userProfile.full_name && userProfile.verification_status !== 'GUEST') {
       setCurrentScreen('dashboard');
     } else {
       setCurrentScreen('profile');

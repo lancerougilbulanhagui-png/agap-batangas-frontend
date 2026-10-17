@@ -64,6 +64,7 @@ export default function ProfileScreen({ onBack, onAdminLogin }) {
         full_name: fullName,
         phone: phone,
         barangay: barangay,
+        verification_status: 'PENDING',
         ...(idProofPhoto ? { id_proof_photo: idProofPhoto } : {})
       };
 
@@ -84,8 +85,8 @@ export default function ProfileScreen({ onBack, onAdminLogin }) {
 
         if (error) throw error;
 
-        alert('[SUCCESS] Profile details updated successfully!');
-        setProfile({ ...profile, username, full_name: fullName, phone, barangay });
+        alert('[SUCCESS] Profile details updated successfully! Your verification request is pending admin approval.');
+        setProfile({ ...profile, ...payload });
         setIsEditing(false);
       } else {
         const profileId = 'USER-' + Math.floor(100000 + Math.random() * 900000);
