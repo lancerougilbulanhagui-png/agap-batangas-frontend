@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from 'react';
 
-/**
- * Project AGAP Batangas - Emergency Hotline & Department Directory
- * Clean UI with Comparative Directions Map from BSU Alangilan CICS Building
- */
 export default function HotlineScreen({ onBack }) {
   const userOrigin = {
     name: 'BSU Alangilan CICS Building',
@@ -45,8 +41,6 @@ export default function HotlineScreen({ onBack }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [showSuggested, setShowSuggested] = useState(false);
   const [activeMapDeptId, setActiveMapDeptId] = useState(null);
-
-
 
   const allHotlines = [
     {
@@ -194,7 +188,6 @@ export default function HotlineScreen({ onBack }) {
 
   return (
     <div style={styles.container}>
-      {/* Navigation Header */}
       <div style={styles.navHeader}>
         <button style={styles.backBtn} onClick={onBack}>
           &lt; Back
@@ -205,7 +198,6 @@ export default function HotlineScreen({ onBack }) {
         </div>
       </div>
 
-      {/* Clean Online Status Bar */}
       <div style={styles.cleanStatusBar}>
         <div style={styles.statusLeft}>
           <span style={styles.onlineDot}>●</span>
@@ -216,7 +208,6 @@ export default function HotlineScreen({ onBack }) {
         </div>
       </div>
 
-      {/* Collapsible Suggested Departments Banner */}
       <div style={styles.suggestedContainer}>
         <button
           style={styles.toggleSuggestedBtn}
@@ -316,7 +307,6 @@ export default function HotlineScreen({ onBack }) {
         )}
       </div>
 
-      {/* Search Bar */}
       <div style={styles.searchContainer}>
         <input
           type="text"
@@ -332,7 +322,6 @@ export default function HotlineScreen({ onBack }) {
         )}
       </div>
 
-      {/* Category Filter Bar */}
       <div style={styles.filterBar}>
         {[
           { key: 'ALL', label: 'ALL (6)' },
@@ -351,7 +340,6 @@ export default function HotlineScreen({ onBack }) {
         ))}
       </div>
 
-      {/* Directory List */}
       <div style={styles.hotlineList}>
         <div style={styles.directoryHeaderTitle}>
           Showing {filteredHotlines.length} Emergency Departments

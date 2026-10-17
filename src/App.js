@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
-
-// Import All UI Screens
 import LandingScreen from './screens/LandingScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import ReportSubmitScreen from './screens/ReportSubmitScreen';
@@ -11,15 +9,11 @@ import DangerZoneMapScreen from './screens/DangerZoneMapScreen';
 import AdminScreen from './screens/AdminScreen';
 import ProfileScreen from './screens/ProfileScreen';
 
-/**
- * Project AGAP Batangas - Real-World Application Router
- */
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('landing'); 
   const [userRole, setUserRole] = useState('GUEST'); 
   const [userProfile, setUserProfile] = useState(null);
 
-  // Auto-detect existing device profile on app load
   useEffect(() => {
     checkExistingDeviceProfile();
   }, []);
@@ -47,18 +41,14 @@ export default function App() {
     }
   };
 
-  // Landing Screen: User selects "YES, I live in Batangas"
   const handleResidentAccess = () => {
     if (userProfile && userProfile.full_name) {
-      // If already registered, go straight to dashboard
       setCurrentScreen('dashboard');
     } else {
-      // Direct to Profile screen to fill up details
       setCurrentScreen('profile');
     }
   };
 
-  // Landing Screen: User selects "NO, I live outside Batangas"
   const handleGuestAccess = () => {
     setUserRole('GUEST');
     setCurrentScreen('dashboard');
@@ -80,7 +70,6 @@ export default function App() {
   return (
     <div style={styles.appContainer}>
       <div style={styles.screenWrapper}>
-        {/* 1. Landing Screen */}
         {currentScreen === 'landing' && (
           <LandingScreen
             onResidentAccess={handleResidentAccess}
@@ -88,7 +77,6 @@ export default function App() {
           />
         )}
 
-        {/* 2. Main Dashboard */}
         {currentScreen === 'dashboard' && (
           <DashboardScreen
             onNavigate={handleNavigate}
@@ -97,7 +85,6 @@ export default function App() {
           />
         )}
 
-        {/* 3. Profile & Residency Signup Screen */}
         {currentScreen === 'profile' && (
           <ProfileScreen
             onBack={handleBackToDashboard}
@@ -105,7 +92,6 @@ export default function App() {
           />
         )}
 
-        {/* 4. Submit Hazard Report */}
         {currentScreen === 'submit-report' && (
           <ReportSubmitScreen
             onBack={handleBackToDashboard}
@@ -114,28 +100,24 @@ export default function App() {
           />
         )}
 
-        {/* 5. Emergency Hotline Directory */}
         {currentScreen === 'hotlines' && (
           <HotlinesScreen
             onBack={handleBackToDashboard}
           />
         )}
 
-        {/* 6. Report Tracker */}
         {currentScreen === 'tracker' && (
           <ReportTrackerScreen
             onBack={handleBackToDashboard}
           />
         )}
 
-        {/* 7. Danger Zone Risk Map */}
         {currentScreen === 'danger-map' && (
           <DangerZoneMapScreen
             onBack={handleBackToDashboard}
           />
         )}
 
-        {/* 8. Admin Command Center */}
         {currentScreen === 'admin' && (
           <AdminScreen
             onBack={handleBackToDashboard}
@@ -152,8 +134,7 @@ const styles = {
     backgroundColor: '#0F172A',
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center',
-    fontFamily: "'Inter', sans-serif"
+    alignItems: 'center', fontFamily: "'Inter', sans-serif"
   },
   screenWrapper: {
     width: '100%',

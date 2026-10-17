@@ -18,7 +18,7 @@ public class ReportService {
     private ReportRepository reportRepository;
 
     public Report createReport(Report report) throws IllegalStateException {
-        // Enforce Guest Rate Limit Rule (Max 3 submissions)
+
         if ("GUEST".equalsIgnoreCase(report.getUserRole())) {
             int currentCount = reportRepository.getDeviceReportCount(report.getDeviceId());
             if (currentCount >= 3) {
@@ -27,7 +27,6 @@ public class ReportService {
             reportRepository.incrementDeviceReportCount(report.getDeviceId());
         }
 
-        // Generate Unique Ticket ID (#AGAP-2026-XXXX)
         int randomNum = 1000 + new Random().nextInt(9000);
         report.setTicketId("AGAP-2026-" + randomNum);
         report.setStatus("PENDING");

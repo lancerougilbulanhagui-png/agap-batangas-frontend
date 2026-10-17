@@ -5,8 +5,6 @@ export default function ProfileScreen({ onBack, onAdminLogin }) {
   const [deviceId, setDeviceId] = useState('');
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  
-  // Form State
   const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
@@ -61,7 +59,6 @@ export default function ProfileScreen({ onBack, onAdminLogin }) {
     setIsSubmitting(true);
 
     try {
-      // Build payload cleanly
       const payload = {
         username: username,
         full_name: fullName,
@@ -71,13 +68,11 @@ export default function ProfileScreen({ onBack, onAdminLogin }) {
       };
 
       if (profile) {
-        // Try updating with username first
         let { error } = await supabase
           .from('profiles')
           .update(payload)
           .eq('device_id', deviceId);
 
-        // Fallback if username column does not exist in schema yet
         if (error && error.message.includes('username')) {
           delete payload.username;
           const fallback = await supabase

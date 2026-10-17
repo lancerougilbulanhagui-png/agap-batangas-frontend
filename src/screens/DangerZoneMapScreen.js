@@ -6,7 +6,6 @@ export default function DangerMapZoneScreen({ onBack }) {
   const [activePinId, setActivePinId] = useState(null);
   const [activeHazards, setActiveHazards] = useState([]);
   const [userGps, setUserGps] = useState({ lat: 13.7565, lng: 121.0583 });
-
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef({});
@@ -21,7 +20,6 @@ export default function DangerMapZoneScreen({ onBack }) {
     }
   }, []);
 
-  // QUERY ACTIVE PINS ONLY: Exclude Resolved & Rejected Hazards
   const fetchActiveHazards = async () => {
     try {
       const { data, error } = await supabase
@@ -40,7 +38,6 @@ export default function DangerMapZoneScreen({ onBack }) {
     ? activeHazards
     : activeHazards.filter((h) => (h.severity || '').toUpperCase() === selectedFilter || (h.category || '').toUpperCase().includes(selectedFilter));
 
-  // Initialize Leaflet Live GPS Map with Green Pin for User and Red Pins for Approved Hazards
   useEffect(() => {
     const loadLeaflet = () => {
       if (!document.getElementById('leaflet-css')) {
@@ -66,7 +63,6 @@ export default function DangerMapZoneScreen({ onBack }) {
       const map = L.map(mapContainerRef.current).setView([userGps.lat, userGps.lng], 14);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
 
-      // 1. GREEN PIN FOR USER LOCATION
       const greenIcon = L.divIcon({
         className: 'custom-pin-green',
         html: `<div style="background-color: #166534; width: 16px; height: 16px; border-radius: 50%; border: 3px solid #FFFFFF; box-shadow: 0 2px 6px rgba(0,0,0,0.4);"></div>`,
@@ -78,7 +74,6 @@ export default function DangerMapZoneScreen({ onBack }) {
         .addTo(map)
         .bindPopup('<strong>Your Current Location</strong>');
 
-      // 2. RED PINS FOR APPROVED HAZARDS
       const redIcon = L.divIcon({
         className: 'custom-pin-red',
         html: `<div style="background-color: #DC2626; width: 16px; height: 16px; border-radius: 50%; border: 3px solid #FFFFFF; box-shadow: 0 2px 6px rgba(0,0,0,0.4);"></div>`,

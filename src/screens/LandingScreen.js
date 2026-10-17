@@ -1,16 +1,11 @@
 import React, { useState } from 'react';
 
-/**
- * Project AGAP Batangas - Landing Screen
- * Features: Official Logo Placeholder, Visual Badges, Residency Access Gate
- */
 export default function LandingScreen({ onResidentAccess, onGuestAccess }) {
   const [selectedStatus, setSelectedStatus] = useState(null);
 
   return (
     <div style={styles.pageBackground}>
       <div style={styles.cardContainer}>
-        {/* Logo Placeholder Header */}
         <div style={styles.logoWrapper}>
           <div style={styles.logoBox}>
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -23,13 +18,11 @@ export default function LandingScreen({ onResidentAccess, onGuestAccess }) {
           <div style={styles.logoSubtext}>BATANGAS EMERGENCY NETWORK</div>
         </div>
 
-        {/* Main Title & Description */}
         <h1 style={styles.mainTitle}>Community Safety Portal</h1>
         <p style={styles.subtitle}>
           Direct emergency reporting, hazard monitoring, and LGU dispatch system for Batangas City residents.
         </p>
 
-        {/* Residency Verification Card */}
         <div style={styles.verificationCard}>
           <div style={styles.sectionHeader}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F766E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -73,7 +66,6 @@ export default function LandingScreen({ onResidentAccess, onGuestAccess }) {
           </div>
         </div>
 
-        {/* Guest Fallback Notice */}
         {selectedStatus === 'guest' && (
           <div style={styles.guestNotice}>
             <strong>GUEST ACCESS NOTICE:</strong> Incident reporting features are restricted to verified Batangas residents. For immediate national assistance, please dial <strong>911</strong>.

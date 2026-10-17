@@ -127,7 +127,7 @@ export default function ReportSubmitScreen({ onBack, onSubmitSuccess }) {
 
     setIsSubmitting(true);
     try {
-      // Sequential ticket numbering starting from 1
+
       const { count, error: countErr } = await supabase.from('reports').select('*', { count: 'exact', head: true });
       const seq = (countErr || count === null) ? 1 : count + 1;
       const ticketNo = `#AGAP-2026-${String(seq).padStart(4, '0')}`;

@@ -1,8 +1,5 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
-/**
- * Submit Report API Service
- */
 export const submitHazardReport = async (reportData) => {
   try {
     const response = await fetch(`${API_BASE_URL}/reports`, {
@@ -26,9 +23,6 @@ export const submitHazardReport = async (reportData) => {
   }
 };
 
-/**
- * Request SMS OTP Service
- */
 export const requestGuestOtp = async (phone) => {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/send-otp`, {

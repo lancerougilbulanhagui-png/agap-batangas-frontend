@@ -2,23 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
 export default function AdminScreen({ onBack }) {
-  // Navigation State: 'DASHBOARD' | 'SUBMITTED_REPORTS' | 'ACTIVE_TRACKER' | 'USER_HANDLING' | 'REJECTED_ARCHIVE' | 'MAP_ANALYTICS'
   const [currentView, setCurrentView] = useState('DASHBOARD');
-
-  // User Handling Sub-View State: 'DIRECTORY' (Type 1: Directory) | 'VERIFICATION_PORTAL' (Type 2: Verification Requests)
   const [userSubTab, setUserSubTab] = useState('DIRECTORY');
-
-  // Directory Filter: 'ALL' | 'VERIFIED' | 'GUEST' | 'PENALIZED' | 'BANNED'
   const [directoryFilter, setDirectoryFilter] = useState('ALL');
-
   const [reports, setReports] = useState([]);
   const [profiles, setProfiles] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Calendar Analytics Selected Month (YYYY-MM)
   const [selectedMonth, setSelectedMonth] = useState('2026-10');
-
-  // Modals & Inspection Overlays
   const [selectedReport, setSelectedReport] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [inspectImage, setInspectImage] = useState(null);
@@ -47,7 +37,6 @@ export default function AdminScreen({ onBack }) {
     }
   };
 
-  // Operational Stage Update
   const handleUpdateReportStatus = async (reportId, newStatus) => {
     try {
       const { error } = await supabase
@@ -67,7 +56,6 @@ export default function AdminScreen({ onBack }) {
     }
   };
 
-  // 1-Click Permanent Purge of Rejected Data (2nd Verification Prompt)
   const handlePurgeAllRejectedData = async () => {
     const rejectedList = reports.filter((r) => ['REJECTED', 'DELETED'].includes((r.status || '').toUpperCase()));
     if (rejectedList.length === 0) {
@@ -93,7 +81,6 @@ export default function AdminScreen({ onBack }) {
     }
   };
 
-  // User Verification & Moderation Actions
   const handleUpdateUserStatus = async (deviceId, newStatus, reason = '') => {
     try {
       const { error } = await supabase
@@ -113,7 +100,6 @@ export default function AdminScreen({ onBack }) {
     }
   };
 
-  // Filtered Lists
   const submittedReports = reports.filter((r) => 
     (r.status || 'PENDING').toUpperCase() === 'PENDING' || 
     (r.status || '').toUpperCase() === 'UNDER_INVESTIGATION'
@@ -127,7 +113,6 @@ export default function AdminScreen({ onBack }) {
     ['REJECTED', 'DELETED'].includes((r.status || '').toUpperCase())
   );
 
-  // User Directory Categorization
   const verifiedCitizens = profiles
     .filter((p) => (p.verification_status || '').toUpperCase() === 'VERIFIED')
     .sort((a, b) => (a.username || a.full_name || '').localeCompare(b.username || b.full_name || ''));
@@ -135,13 +120,11 @@ export default function AdminScreen({ onBack }) {
   const guestUsers = profiles
     .filter((p) => (p.verification_status || 'GUEST').toUpperCase() !== 'VERIFIED');
 
-  // Pending Citizen Verification Requests (Only users who voluntarily submitted ID proof)
   const pendingVerificationRequests = profiles.filter((p) => 
     (p.verification_status || '').toUpperCase() === 'PENDING' ||
     ((p.verification_status || '').toUpperCase() !== 'VERIFIED' && p.id_proof_photo)
   );
 
-  // Get Submissions for a Specific User or Device ID
   const getUserSubmissions = (userObj) => {
     if (!userObj) return [];
     return reports.filter((r) => 
@@ -150,7 +133,6 @@ export default function AdminScreen({ onBack }) {
     );
   };
 
-  // Find Submitter Info for a Report
   const getSubmitterInfo = (reportObj) => {
     if (!reportObj) return { username: 'Unknown User', deviceId: 'N/A', status: 'GUEST', profile: null };
     const matchedProfile = profiles.find((p) => p.device_id && p.device_id === reportObj.device_id);
@@ -170,7 +152,6 @@ export default function AdminScreen({ onBack }) {
     };
   };
 
-  // Calendar Analytics Calculations
   const getCalendarMonthlyChartData = () => {
     const [year, month] = selectedMonth.split('-').map(Number);
     const daysInMonth = new Date(year, month, 0).getDate();
@@ -212,7 +193,6 @@ export default function AdminScreen({ onBack }) {
 
   return (
     <div style={styles.container}>
-      {/* Top Header */}
       <div style={styles.navHeader}>
         <button 
           style={styles.backBtn} 
@@ -226,21 +206,16 @@ export default function AdminScreen({ onBack }) {
         </div>
       </div>
 
-      {/* 1. MAIN DASHBOARD HOME VIEW (Clean Layout) */}
       {currentView === 'DASHBOARD' && (
         <div style={styles.dashboardContainer}>
-          {/* Minimal Welcoming Banner */}
           <div style={styles.welcomeBanner}>
             <div style={styles.welcomeTag}>OFFICIAL ADMINISTRATOR PORTAL</div>
             <h3 style={styles.welcomeTitle}>Welcome back, Admin</h3>
             <p style={styles.welcomeSubtext}>Monitor hazards, manage citizen reports, and track live analytics.</p>
           </div>
 
-          {/* Module Cards Stack */}
           <div style={styles.moduleSectionTitle}>COMMAND CENTER MODULES</div>
           <div style={styles.moduleStack}>
-            
-            {/* Card 1: Submitted Reports */}
             <div style={styles.moduleCard} onClick={() => setCurrentView('SUBMITTED_REPORTS')}>
               <div style={styles.moduleCardLeft}>
                 <span style={styles.moduleCardTitle}>Submitted Reports Database</span>
@@ -251,7 +226,6 @@ export default function AdminScreen({ onBack }) {
               </div>
             </div>
 
-            {/* Card 2: Active Hazard Tracker */}
             <div style={styles.moduleCard} onClick={() => setCurrentView('ACTIVE_TRACKER')}>
               <div style={styles.moduleCardLeft}>
                 <span style={styles.moduleCardTitle}>Active Hazard Tracker</span>
@@ -262,7 +236,6 @@ export default function AdminScreen({ onBack }) {
               </div>
             </div>
 
-            {/* Card 3: User & Device Handling */}
             <div style={styles.moduleCard} onClick={() => setCurrentView('USER_HANDLING')}>
               <div style={styles.moduleCardLeft}>
                 <span style={styles.moduleCardTitle}>User & Device Handling</span>
@@ -273,7 +246,6 @@ export default function AdminScreen({ onBack }) {
               </div>
             </div>
 
-            {/* Card 4: Deleted / Rejected Data */}
             <div style={styles.moduleCard} onClick={() => setCurrentView('REJECTED_ARCHIVE')}>
               <div style={styles.moduleCardLeft}>
                 <span style={styles.moduleCardTitle}>Deleted & Rejected Data</span>
@@ -284,7 +256,6 @@ export default function AdminScreen({ onBack }) {
               </div>
             </div>
 
-            {/* Card 5: Map & Analytics */}
             <div style={styles.moduleCard} onClick={() => setCurrentView('MAP_ANALYTICS')}>
               <div style={styles.moduleCardLeft}>
                 <span style={styles.moduleCardTitle}>Live Map & Calendar Analytics</span>
@@ -294,12 +265,10 @@ export default function AdminScreen({ onBack }) {
                 <span style={styles.badgeGreen}>Live View</span>
               </div>
             </div>
-
           </div>
         </div>
       )}
 
-      {/* 2. SUBMITTED REPORTS DATABASE */}
       {currentView === 'SUBMITTED_REPORTS' && (
         <div style={styles.sectionStack}>
           <div style={styles.sectionTitle}>Submitted Reports Database (Pending Triage)</div>
@@ -320,8 +289,6 @@ export default function AdminScreen({ onBack }) {
                   
                   <h4 style={styles.itemTitle}>{rep.hazard_type || rep.category || rep.title || 'Hazard Incident Report'}</h4>
                   <p style={styles.itemMeta}>Location: {rep.location || 'Not Specified'}</p>
-                  
-                  {/* Submitter Info */}
                   <div style={styles.submitterBar}>
                     <span style={styles.submitterText}>Submitted by: <strong>@{submitter.username}</strong> (Device ID: {submitter.deviceId})</span>
                     <span style={getUserStatusBadgeStyle(submitter.status)}>{(submitter.status || 'GUEST').toUpperCase()}</span>
@@ -358,7 +325,6 @@ export default function AdminScreen({ onBack }) {
         </div>
       )}
 
-      {/* 3. ACTIVE HAZARD TRACKER */}
       {currentView === 'ACTIVE_TRACKER' && (
         <div style={styles.sectionStack}>
           <div style={styles.sectionTitle}>Active Approved Hazard Tracker</div>
@@ -411,10 +377,8 @@ export default function AdminScreen({ onBack }) {
         </div>
       )}
 
-      {/* 4. USER & DEVICE HANDLING (2 DISTINCT SUB-VIEWS) */}
       {currentView === 'USER_HANDLING' && (
         <div style={styles.sectionStack}>
-          {/* Sub-View Switcher Bar */}
           <div style={styles.subTabContainer}>
             <button
               style={userSubTab === 'DIRECTORY' ? styles.subTabBtnActive : styles.subTabBtnInactive}
@@ -430,7 +394,6 @@ export default function AdminScreen({ onBack }) {
             </button>
           </div>
 
-          {/* SUB-VIEW 1: USER DIRECTORY */}
           {userSubTab === 'DIRECTORY' && (
             <div style={styles.sectionStack}>
               <div style={styles.chipFilterRow}>
@@ -445,7 +408,6 @@ export default function AdminScreen({ onBack }) {
                 ))}
               </div>
 
-              {/* Verified Citizens List (Alphabetical) */}
               {(directoryFilter === 'ALL' || directoryFilter === 'VERIFIED') && (
                 <div>
                   <div style={styles.sectionSubTitle}>Verified Citizens (Alphabetical Order)</div>
@@ -471,7 +433,6 @@ export default function AdminScreen({ onBack }) {
                 </div>
               )}
 
-              {/* Guest Users List (Sequential #1 to #N with Device ID Tracking) */}
               {(directoryFilter === 'ALL' || directoryFilter === 'GUEST' || directoryFilter === 'PENALIZED' || directoryFilter === 'BANNED') && (
                 <div>
                   <div style={styles.sectionSubTitle}>Guest Users (Tracked by Device ID)</div>
@@ -501,7 +462,6 @@ export default function AdminScreen({ onBack }) {
             </div>
           )}
 
-          {/* SUB-VIEW 2: CITIZEN VERIFICATION REQUESTS */}
           {userSubTab === 'VERIFICATION_PORTAL' && (
             <div style={styles.sectionStack}>
               <div style={styles.sectionSubTitle}>Pending Identity Verification Submissions</div>
@@ -551,7 +511,6 @@ export default function AdminScreen({ onBack }) {
         </div>
       )}
 
-      {/* 5. DELETED / REJECTED DATA ARCHIVE */}
       {currentView === 'REJECTED_ARCHIVE' && (
         <div style={styles.sectionStack}>
           <div style={styles.sectionTitle}>Deleted & Rejected Reports Archive</div>
@@ -580,7 +539,6 @@ export default function AdminScreen({ onBack }) {
         </div>
       )}
 
-      {/* 6. MAP & CALENDAR ANALYTICS */}
       {currentView === 'MAP_ANALYTICS' && (
         <div style={styles.sectionStack}>
           <div style={styles.sectionTitle}>Live Approved Danger Zone Map (Clean View)</div>
@@ -625,7 +583,6 @@ export default function AdminScreen({ onBack }) {
         </div>
       )}
 
-      {/* FULL REPORT DETAIL MODAL */}
       {selectedReport && (
         <div style={styles.modalBackdrop} onClick={() => setSelectedReport(null)}>
           <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -637,8 +594,7 @@ export default function AdminScreen({ onBack }) {
             <div style={styles.modalBodyStack}>
               <div><span style={styles.fieldLabel}>TICKET REF NUMBER:</span> <span style={styles.fieldValBold}>{selectedReport.id || selectedReport.ticket_no}</span></div>
               <div><span style={styles.fieldLabel}>HAZARD CATEGORY / TITLE:</span> <span style={styles.fieldVal}>{selectedReport.hazard_type || selectedReport.category}</span></div>
-              
-              {/* Connected Submitter Link */}
+
               {(() => {
                 const submitter = getSubmitterInfo(selectedReport);
                 return (
@@ -698,7 +654,6 @@ export default function AdminScreen({ onBack }) {
         </div>
       )}
 
-      {/* USER ACCOUNT MODAL (DISTINCT FOR VERIFIED vs GUEST) */}
       {selectedUser && (
         <div style={styles.modalBackdrop} onClick={() => setSelectedUser(null)}>
           <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -708,7 +663,6 @@ export default function AdminScreen({ onBack }) {
             </div>
 
             <div style={styles.modalBodyStack}>
-              {/* Account Identity Info */}
               {(selectedUser.verification_status || '').toUpperCase() === 'VERIFIED' ? (
                 <div style={styles.verifiedInfoBox}>
                   <div style={styles.verifiedTagRow}>
@@ -735,7 +689,6 @@ export default function AdminScreen({ onBack }) {
                 </div>
               )}
 
-              {/* INTEGRATED SUBMITTED REPORTS LIST FOR THIS USER */}
               <div style={styles.userReportsContainer}>
                 <span style={styles.fieldLabel}>REPORTS SUBMITTED BY THIS ACCOUNT ({getUserSubmissions(selectedUser).length}):</span>
                 {getUserSubmissions(selectedUser).length === 0 ? (
@@ -762,7 +715,6 @@ export default function AdminScreen({ onBack }) {
                 )}
               </div>
 
-              {/* Moderation Controls */}
               <div style={styles.modalActionBox}>
                 <span style={styles.fieldLabel}>ACCOUNT & DEVICE MODERATION:</span>
                 <div style={styles.actionRow}>
@@ -784,7 +736,6 @@ export default function AdminScreen({ onBack }) {
         </div>
       )}
 
-      {/* MESSENGER-STYLE BLURRED PHOTO PREVIEW LIGHTBOX */}
       {inspectImage && (
         <div style={styles.messengerBlurBackdrop} onClick={() => setInspectImage(null)}>
           <div style={styles.messengerBlurHeader}>
@@ -814,35 +765,18 @@ const styles = {
   backBtn: { backgroundColor: '#F1F5F9', border: 'none', color: '#0F766E', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: '800', cursor: 'pointer' },
   headerTitle: { fontSize: '18px', fontWeight: '800', color: '#0F172A', margin: 0 },
   headerSub: { fontSize: '11px', color: '#64748B' },
-  
-  // Dashboard Minimal Banner
   dashboardContainer: { display: 'flex', flexDirection: 'column', gap: '14px' },
   welcomeBanner: { backgroundColor: '#0F766E', color: '#FFFFFF', borderRadius: '12px', padding: '14px', boxShadow: '0 2px 6px rgba(15, 118, 110, 0.15)' },
   welcomeTag: { fontSize: '8px', fontWeight: '800', letterSpacing: '0.8px', color: '#CCFBF1', marginBottom: '2px' },
   welcomeTitle: { fontSize: '15px', fontWeight: '800', margin: '0 0 4px 0' },
   welcomeSubtext: { fontSize: '11px', color: '#E6F4F1', margin: 0, lineHeight: '1.3' },
-
   moduleSectionTitle: { fontSize: '10px', fontWeight: '800', color: '#475569', letterSpacing: '0.5px' },
   moduleStack: { display: 'flex', flexDirection: 'column', gap: '8px' },
-  
-  // Clean Module Card Layout: Title + Short Desc on Left, Badge Vertically Centered on Right
-  moduleCard: { 
-    backgroundColor: '#FFFFFF', 
-    border: '1px solid #CBD5E1', 
-    borderRadius: '10px', 
-    padding: '12px 14px', 
-    cursor: 'pointer', 
-    display: 'flex', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    gap: '12px',
-    boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
-  },
+  moduleCard: { backgroundColor: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '10px', padding: '12px 14px', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px',boxShadow: '0 1px 2px rgba(0,0,0,0.03)'},
   moduleCardLeft: { display: 'flex', flexDirection: 'column', gap: '2px', flex: 1 },
   moduleCardTitle: { fontSize: '13px', fontWeight: '800', color: '#0F172A' },
   moduleCardShortDesc: { fontSize: '10px', color: '#64748B', lineHeight: '1.3' },
   moduleCardRight: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexShrink: 0 },
-
   sectionStack: { display: 'flex', flexDirection: 'column', gap: '10px' },
   sectionTitle: { fontSize: '11px', fontWeight: '800', color: '#475569', textTransform: 'uppercase' },
   sectionSubTitle: { fontSize: '10px', fontWeight: '800', color: '#0F766E', textTransform: 'uppercase', marginTop: '4px' },
@@ -858,7 +792,6 @@ const styles = {
   submitterDetailBox: { backgroundColor: '#F0FDF4', border: '1px solid #CCFBF1', borderRadius: '6px', padding: '6px 8px', cursor: 'pointer' },
   submitterLinkText: { fontSize: '10px', fontWeight: '800', color: '#0F766E', marginTop: '2px' },
   photoCountBox: { fontSize: '10px', fontWeight: '800', color: '#0F766E', backgroundColor: '#F0FDF4', padding: '4px 8px', borderRadius: '4px', margin: '4px 0' },
-
   actionRow: { display: 'flex', gap: '6px', marginTop: '6px' },
   btnInvestigate: { flex: 1, padding: '6px', backgroundColor: '#D97706', color: '#FFFFFF', border: 'none', borderRadius: '4px', fontSize: '10px', fontWeight: '800', cursor: 'pointer' },
   btnApprove: { flex: 1, padding: '6px', backgroundColor: '#166534', color: '#FFFFFF', border: 'none', borderRadius: '4px', fontSize: '10px', fontWeight: '800', cursor: 'pointer' },
@@ -868,40 +801,33 @@ const styles = {
   btnResolve: { flex: 1, padding: '6px', backgroundColor: '#166534', color: '#FFFFFF', border: 'none', borderRadius: '4px', fontSize: '10px', fontWeight: '800', cursor: 'pointer' },
   btnWarn: { flex: 1, padding: '6px', backgroundColor: '#D97706', color: '#FFFFFF', border: 'none', borderRadius: '4px', fontSize: '10px', fontWeight: '800', cursor: 'pointer' },
   btnBan: { flex: 1, padding: '6px', backgroundColor: '#DC2626', color: '#FFFFFF', border: 'none', borderRadius: '4px', fontSize: '10px', fontWeight: '800', cursor: 'pointer' },
-
   trackerBar: { display: 'flex', gap: '4px', backgroundColor: '#F8FAFC', padding: '6px', borderRadius: '6px', margin: '6px 0' },
   stepActive: { fontSize: '8px', fontWeight: '800', color: '#0F766E', backgroundColor: '#CCFBF1', padding: '2px 4px', borderRadius: '4px' },
   stepDone: { fontSize: '8px', color: '#94A3B8', padding: '2px 4px' },
-
   subTabContainer: { display: 'flex', gap: '6px', marginBottom: '8px' },
   subTabBtnActive: { flex: 1, padding: '8px', backgroundColor: '#0F766E', color: '#FFFFFF', border: 'none', borderRadius: '6px', fontSize: '10px', fontWeight: '800', cursor: 'pointer' },
   subTabBtnInactive: { flex: 1, padding: '8px', backgroundColor: '#E2E8F0', color: '#475569', border: 'none', borderRadius: '6px', fontSize: '10px', fontWeight: '600', cursor: 'pointer' },
   chipFilterRow: { display: 'flex', gap: '4px', overflowX: 'auto', marginBottom: '8px' },
   chipActive: { padding: '4px 8px', backgroundColor: '#0F766E', color: '#FFFFFF', border: 'none', borderRadius: '12px', fontSize: '9px', fontWeight: '800', cursor: 'pointer' },
   chipInactive: { padding: '4px 8px', backgroundColor: '#E2E8F0', color: '#475569', border: 'none', borderRadius: '12px', fontSize: '9px', fontWeight: '600', cursor: 'pointer' },
-
   userCardRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#FFFFFF', border: '1px solid #CBD5E1', padding: '8px 10px', borderRadius: '8px', cursor: 'pointer', marginBottom: '6px' },
   userLeftBox: { display: 'flex', alignItems: 'center', gap: '8px' },
   userAvatarSquare: { fontSize: '9px', fontWeight: '800', backgroundColor: '#CCFBF1', color: '#0F766E', padding: '4px 6px', borderRadius: '4px' },
   numBadge: { fontSize: '9px', fontWeight: '800', backgroundColor: '#E2E8F0', color: '#475569', padding: '3px 6px', borderRadius: '4px' },
   userNameText: { fontSize: '12px', fontWeight: '800', color: '#0F172A' },
   userMetaText: { fontSize: '9px', color: '#64748B' },
-
   verificationCard: { backgroundColor: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '10px', padding: '10px', marginBottom: '8px' },
   idPhotoContainer: { marginTop: '6px', backgroundColor: '#F8FAFC', padding: '6px', borderRadius: '6px' },
   idProofThumb: { width: '100%', height: '110px', objectFit: 'cover', borderRadius: '6px', marginTop: '4px', border: '1px solid #CBD5E1', cursor: 'pointer' },
-
   userReportsContainer: { marginTop: '8px', backgroundColor: '#F8FAFC', border: '1px solid #CBD5E1', padding: '8px', borderRadius: '8px' },
   userReportEmptyNotice: { fontSize: '10px', color: '#64748B', textAlign: 'center', padding: '6px 0' },
   userReportMiniCard: { backgroundColor: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '6px 8px', marginTop: '4px', cursor: 'pointer' },
   userReportMiniTitle: { fontSize: '11px', fontWeight: '800', color: '#0F172A' },
   userReportMiniSub: { fontSize: '9px', color: '#0F766E', fontWeight: '700' },
-
   verifiedInfoBox: { backgroundColor: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '8px', padding: '10px' },
   guestInfoBox: { backgroundColor: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '10px' },
   guestNoticeText: { fontSize: '10px', color: '#64748B', lineHeight: '1.3', margin: '4px 0' },
   verifiedTagRow: { marginBottom: '4px' },
-
   purgeAllBtn: { width: '100%', padding: '8px', backgroundColor: '#991B1B', color: '#FFFFFF', border: 'none', borderRadius: '6px', fontSize: '10px', fontWeight: '800', cursor: 'pointer', marginBottom: '6px' },
   cleanMapIframe: { borderRadius: '10px', border: 'none', display: 'block' },
   chartCard: { backgroundColor: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '10px', padding: '12px' },
@@ -915,13 +841,11 @@ const styles = {
   barFill: { width: '100%', backgroundColor: '#0F766E', borderRadius: '3px' },
   barDayLabel: { fontSize: '7px', color: '#64748B', marginTop: '2px' },
   chartFooterLegend: { fontSize: '9px', color: '#64748B', textAlign: 'center', marginTop: '6px' },
-
   badgeGreen: { fontSize: '8px', fontWeight: '800', backgroundColor: '#DCFCE7', color: '#166534', padding: '2px 5px', borderRadius: '4px' },
   badgeTeal: { fontSize: '8px', fontWeight: '800', backgroundColor: '#CCFBF1', color: '#0F766E', padding: '2px 5px', borderRadius: '4px' },
   badgeOrange: { fontSize: '8px', fontWeight: '800', backgroundColor: '#FFEDD5', color: '#C2410C', padding: '2px 5px', borderRadius: '4px' },
   badgeRed: { fontSize: '8px', fontWeight: '800', backgroundColor: '#FEE2E2', color: '#991B1B', padding: '2px 5px', borderRadius: '4px' },
   badgeBlue: { fontSize: '8px', fontWeight: '800', backgroundColor: '#DBEAFE', color: '#1E40AF', padding: '2px 5px', borderRadius: '4px' },
-
   modalBackdrop: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.65)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '16px' },
   modalContent: { backgroundColor: '#FFFFFF', borderRadius: '12px', padding: '14px', maxWidth: '380px', width: '100%', maxHeight: '85vh', overflowY: 'auto' },
   modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' },
@@ -936,24 +860,7 @@ const styles = {
   photoGalleryGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', marginTop: '4px' },
   galleryThumb: { width: '100%', height: '65px', objectFit: 'cover', borderRadius: '6px', border: '2px solid #0F766E', cursor: 'pointer' },
   modalActionBox: { marginTop: '8px', backgroundColor: '#F8FAFC', border: '1px solid #CBD5E1', padding: '8px', borderRadius: '8px' },
-
-  // MESSENGER-STYLE BLURRED PHOTO PREVIEW LIGHTBOX (No Solid Box, Full Glass Blur Overlay)
-  messengerBlurBackdrop: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    zIndex: 9999,
-    padding: '20px 16px'
-  },
+  messengerBlurBackdrop: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center', zIndex: 9999, padding: '20px 16px'},
   messengerBlurHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: '440px' },
   messengerBlurTitle: { fontSize: '11px', fontWeight: '800', color: '#FFFFFF', letterSpacing: '0.8px', textShadow: '0 1px 2px rgba(0,0,0,0.5)' },
   messengerCloseBtn: { backgroundColor: 'rgba(255, 255, 255, 0.25)', color: '#FFFFFF', border: '1px solid rgba(255, 255, 255, 0.4)', padding: '6px 12px', borderRadius: '20px', fontSize: '11px', fontWeight: '800', cursor: 'pointer', backdropFilter: 'blur(10px)' },

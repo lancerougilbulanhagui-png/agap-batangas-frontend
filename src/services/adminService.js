@@ -1,8 +1,5 @@
 const API_BASE_URL = 'http://localhost:8080/api/admin';
 
-/**
- * Fetch all reports from Admin Database
- */
 export const fetchAdminReports = async () => {
   try {
     const response = await fetch(`${API_BASE_URL}/reports`);
@@ -10,13 +7,10 @@ export const fetchAdminReports = async () => {
     return await response.json();
   } catch (err) {
     console.warn('Backend offline, using fallback reports data:', err.message);
-    return null; // Signals component to use initial synchronized dataset
+    return null; 
   }
 };
 
-/**
- * Save updated status (APPROVED / INVESTIGATING / REJECTED)
- */
 export const updateReportStatusInDb = async (reportId, status, noticeText) => {
   try {
     const response = await fetch(`${API_BASE_URL}/reports/${reportId}/status`, {
@@ -31,9 +25,6 @@ export const updateReportStatusInDb = async (reportId, status, noticeText) => {
   }
 };
 
-/**
- * Ban device fingerprint and reject tickets
- */
 export const banDeviceInDb = async (deviceId) => {
   try {
     const response = await fetch(`${API_BASE_URL}/devices/${deviceId}/ban`, {
