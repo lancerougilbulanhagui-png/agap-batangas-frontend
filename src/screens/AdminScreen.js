@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
+import { adminSupabase } from '../supabaseClient';
 import {
   deleteRejectedReportsInDb,
   fetchAdminReports,
@@ -27,9 +27,10 @@ export default function AdminScreen({ onBack }) {
     try {
       setReports(await fetchAdminReports());
 
-      const { data: profData } = await supabase
+      const { data: profData, error: profileError } = await adminSupabase
         .from('profiles')
         .select('*');
+      if (profileError) throw profileError;
       if (profData) setProfiles(profData);
     } catch (err) {
       console.error('Fetch error:', err.message);
@@ -74,7 +75,7 @@ export default function AdminScreen({ onBack }) {
 
   const handleUpdateUserStatus = async (deviceId, newStatus, reason = '') => {
     try {
-      const { error } = await supabase
+      const { error } = await adminSupabase
         .from('profiles')
         .update({ verification_status: newStatus })
         .eq('device_id', deviceId);
@@ -119,6 +120,7 @@ export default function AdminScreen({ onBack }) {
   const getUserSubmissions = (userObj) => {
     if (!userObj) return [];
     return reports.filter((r) => 
+      (userObj.auth_user_id && r.auth_user_id === userObj.auth_user_id) ||
       (userObj.device_id && r.device_id === userObj.device_id) ||
       (userObj.username && (r.sender_name === userObj.username || r.username === userObj.username))
     );
@@ -126,7 +128,10 @@ export default function AdminScreen({ onBack }) {
 
   const getSubmitterInfo = (reportObj) => {
     if (!reportObj) return { username: 'Unknown User', deviceId: 'N/A', status: 'GUEST', profile: null };
-    const matchedProfile = profiles.find((p) => p.device_id && p.device_id === reportObj.device_id);
+    const matchedProfile = profiles.find((p) =>
+      (reportObj.auth_user_id && p.auth_user_id === reportObj.auth_user_id) ||
+      (p.device_id && p.device_id === reportObj.device_id)
+    );
     if (matchedProfile) {
       return {
         username: matchedProfile.username || matchedProfile.full_name || 'Registered Resident',

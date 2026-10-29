@@ -9,13 +9,13 @@ export default function ReportTrackerScreen({ onBack }) {
   useEffect(() => {
     const localDeviceId = localStorage.getItem('agap_device_id') || '';
     setDeviceId(localDeviceId);
-    fetchUserSubmittedReports(localDeviceId);
+    fetchUserSubmittedReports();
   }, []);
 
-  const fetchUserSubmittedReports = async (targetDeviceId) => {
+  const fetchUserSubmittedReports = async () => {
     setIsLoading(true);
     try {
-      setReports(await fetchReports({ deviceId: targetDeviceId }));
+      setReports(await fetchReports());
     } catch (err) {
       console.error('Tracker fetch error:', err.message);
     } finally {
@@ -69,7 +69,7 @@ export default function ReportTrackerScreen({ onBack }) {
 
       <div style={styles.refreshBar}>
         <span style={styles.deviceText}>Device ID: {deviceId || 'Detecting...'}</span>
-        <button style={styles.refreshBtn} onClick={() => fetchUserSubmittedReports(deviceId)}>
+        <button style={styles.refreshBtn} onClick={fetchUserSubmittedReports}>
           Refresh Status
         </button>
       </div>

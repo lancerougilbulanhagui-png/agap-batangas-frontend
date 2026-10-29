@@ -13,19 +13,20 @@ export default function DashboardScreen({ onNavigate, userRole = 'GUEST', onOpen
   }, [userRole]);
 
   const fetchDeviceProfile = async () => {
-    const localDeviceId = localStorage.getItem('agap_device_id');
-    if (!localDeviceId) return;
-
     try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) return;
+
       const { data } = await supabase
         .from('profiles')
         .select('*')
-        .eq('device_id', localDeviceId)
+        .eq('auth_user_id', user.id)
         .maybeSingle();
 
       if (data) setUserProfile(data);
     } catch (err) {
-      console.log('No registered profile for device.');
+      console.error('Unable to load guest profile:', err.message);
     }
   };
 

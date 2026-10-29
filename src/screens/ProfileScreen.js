@@ -19,27 +19,31 @@ export default function ProfileScreen({ onBack, onAdminLogin }) {
       localStorage.setItem('agap_device_id', localDeviceId);
     }
     setDeviceId(localDeviceId);
-    fetchProfile(localDeviceId);
+    fetchProfile();
   }, []);
 
-  const fetchProfile = async (targetDeviceId) => {
+  const fetchProfile = async () => {
     try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error('Authenticated guest session is missing.');
+
       const { data } = await supabase
         .from('profiles')
         .select('*')
-        .eq('device_id', targetDeviceId)
+        .eq('auth_user_id', user.id)
         .maybeSingle();
 
       if (data) {
         setProfile(data);
         setUsername(data.username || data.full_name || '');
         setFullName(data.full_name || '');
-        setPhone(data.phone || '');
+        setPhone(data.phone_number || '');
         setBarangay(data.barangay || 'Brgy. Alangilan');
         setIdProofPhoto(data.id_proof_photo || '');
       }
     } catch (err) {
-      console.log('No profile recorded for device yet.');
+      console.error('Unable to load profile:', err.message);
     }
   };
 
@@ -62,55 +66,41 @@ export default function ProfileScreen({ onBack, onAdminLogin }) {
       const payload = {
         username: username,
         full_name: fullName,
-        phone: phone,
+        phone_number: phone,
         barangay: barangay,
         verification_status: 'PENDING',
         ...(idProofPhoto ? { id_proof_photo: idProofPhoto } : {})
       };
 
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error('Authenticated guest session is missing.');
+
       if (profile) {
-        let { error } = await supabase
+        const { error } = await supabase
           .from('profiles')
           .update(payload)
-          .eq('device_id', deviceId);
-
-        if (error && error.message.includes('username')) {
-          delete payload.username;
-          const fallback = await supabase
-            .from('profiles')
-            .update(payload)
-            .eq('device_id', deviceId);
-          error = fallback.error;
-        }
-
+          .eq('auth_user_id', user.id);
         if (error) throw error;
 
         alert('[SUCCESS] Profile details updated successfully! Your verification request is pending admin approval.');
         setProfile({ ...profile, ...payload });
         setIsEditing(false);
       } else {
-        const profileId = 'USER-' + Math.floor(100000 + Math.random() * 900000);
-
-        let insertPayload = {
-          id: profileId,
+        const insertPayload = {
+          id: `USER-${user.id}`,
+          auth_user_id: user.id,
           device_id: deviceId,
           username: username,
           full_name: fullName,
-          phone: phone,
+          phone_number: phone,
           barangay: barangay,
           user_role: 'GUEST',
           verification_status: 'PENDING',
           id_proof_photo: idProofPhoto
         };
 
-        let { error } = await supabase.from('profiles').insert([insertPayload]);
-
-        if (error && error.message.includes('username')) {
-          delete insertPayload.username;
-          const fallback = await supabase.from('profiles').insert([insertPayload]);
-          error = fallback.error;
-        }
-
+        const { error } = await supabase.from('profiles').insert([insertPayload]);
         if (error) throw error;
 
         alert('[SUCCESS] Details saved! You can now use all app functions while admin verifies your identity.');
@@ -152,7 +142,7 @@ export default function ProfileScreen({ onBack, onAdminLogin }) {
           <h3 style={styles.userName}>Username: @{profile.username || 'User'}</h3>
           <div style={styles.userMeta}>Full Legal Name: {profile.full_name}</div>
           <div style={styles.userMeta}>Barangay Residency: {profile.barangay}</div>
-          <div style={styles.userMeta}>Phone Number: {profile.phone || 'Not provided'}</div>
+          <div style={styles.userMeta}>Phone Number: {profile.phone_number || 'Not provided'}</div>
 
           <div style={styles.infoBanner}>
             Your details are active. You can report hazards and access emergency features.
@@ -253,11 +243,10 @@ export default function ProfileScreen({ onBack, onAdminLogin }) {
         </div>
       )}
 
-      {/* Admin Portal Access Button */}
       <div style={styles.adminAccessBox}>
         <span style={styles.adminLabel}>CDRRMO OFFICIAL ACCESS</span>
         <button style={styles.adminPortalBtn} onClick={onAdminLogin}>
-          Open Admin Command Center
+          Administrator Sign In
         </button>
       </div>
     </div>
