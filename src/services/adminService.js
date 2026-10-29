@@ -1,38 +1,35 @@
-const API_BASE_URL = 'http://localhost:8080/api/admin';
+const API_BASE_URL = `${process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api'}/admin`;
 
 export const fetchAdminReports = async () => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/reports`);
-    if (!response.ok) throw new Error('Failed to fetch admin reports');
-    return await response.json();
-  } catch (err) {
-    console.warn('Backend offline, using fallback reports data:', err.message);
-    return null; 
-  }
+  const response = await fetch(`${API_BASE_URL}/reports`);
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Failed to fetch admin reports.');
+  return data;
 };
 
 export const updateReportStatusInDb = async (reportId, status, noticeText) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/reports/${reportId}/status`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status, noticeText })
-    });
-    return await response.json();
-  } catch (err) {
-    console.warn('Backend update offline, updating local state:', err.message);
-    return { success: true };
-  }
+  const response = await fetch(`${API_BASE_URL}/reports/${encodeURIComponent(reportId)}/status`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status, noticeText })
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Failed to update report status.');
+  return data;
+};
+
+export const deleteRejectedReportsInDb = async () => {
+  const response = await fetch(`${API_BASE_URL}/reports/rejected`, { method: 'DELETE' });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Failed to delete rejected reports.');
+  return data;
 };
 
 export const banDeviceInDb = async (deviceId) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/devices/${deviceId}/ban`, {
-      method: 'POST'
-    });
-    return await response.json();
-  } catch (err) {
-    console.warn('Backend ban offline, applying locally:', err.message);
-    return { success: true };
-  }
+  const response = await fetch(`${API_BASE_URL}/devices/${encodeURIComponent(deviceId)}/ban`, {
+    method: 'POST'
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Failed to ban device.');
+  return data;
 };

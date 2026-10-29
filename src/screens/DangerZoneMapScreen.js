@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../supabaseClient';
+import { fetchReports } from '../services/reportService';
 
 export default function DangerMapZoneScreen({ onBack }) {
   const [selectedFilter, setSelectedFilter] = useState('ALL');
@@ -22,13 +22,10 @@ export default function DangerMapZoneScreen({ onBack }) {
 
   const fetchActiveHazards = async () => {
     try {
-      const { data, error } = await supabase
-        .from('reports')
-        .select('*')
-        .in('status', ['APPROVED', 'IN_PROGRESS', 'DISPATCHED']);
-
-      if (error) throw error;
-      if (data) setActiveHazards(data);
+      setActiveHazards(await Promise.all(
+        ['APPROVED', 'IN_PROGRESS', 'DISPATCHED']
+          .map((status) => fetchReports({ status }))
+      ).then((reports) => reports.flat()));
     } catch (err) {
       console.error('Map fetch error:', err.message);
     }

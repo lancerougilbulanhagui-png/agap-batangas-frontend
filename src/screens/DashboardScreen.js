@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import { fetchReports } from '../services/reportService';
 
 export default function DashboardScreen({ onNavigate, userRole = 'GUEST', onOpenProfile }) {
   const [userProfile, setUserProfile] = useState(null);
@@ -31,15 +32,7 @@ export default function DashboardScreen({ onNavigate, userRole = 'GUEST', onOpen
   const fetchLiveHazardFeed = async () => {
     setIsLoadingFeed(true);
     try {
-      const { data, error } = await supabase
-        .from('reports')
-        .select('*')
-        .eq('status', 'APPROVED')
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (error) throw error;
-      if (data) setLiveFeed(data);
+      setLiveFeed((await fetchReports({ status: 'APPROVED' })).slice(0, 5));
     } catch (err) {
       console.error('Feed error:', err.message);
     } finally {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../supabaseClient';
+import { submitHazardReport } from '../services/reportService';
 
 export default function ReportSubmitScreen({ onBack, onSubmitSuccess }) {
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -128,15 +128,10 @@ export default function ReportSubmitScreen({ onBack, onSubmitSuccess }) {
     setIsSubmitting(true);
     try {
 
-      const { count, error: countErr } = await supabase.from('reports').select('*', { count: 'exact', head: true });
-      const seq = (countErr || count === null) ? 1 : count + 1;
-      const ticketNo = `#AGAP-2026-${String(seq).padStart(4, '0')}`;
       const localDeviceId = localStorage.getItem('agap_device_id') || 'GUEST-DEV';
       const photoPayload = photosList.length > 0 ? JSON.stringify(photosList.map((p) => p.base64)) : null;
 
       const payload = {
-        id: ticketNo,
-        ticket_no: ticketNo,
         category: hazardType,
         hazard_type: hazardType,
         severity: severityLevel,
@@ -149,10 +144,9 @@ export default function ReportSubmitScreen({ onBack, onSubmitSuccess }) {
         photos: photoPayload
       };
 
-      const { error } = await supabase.from('reports').insert([payload]);
-      if (error) throw error;
+      const savedReport = await submitHazardReport(payload);
 
-      alert(`✓ Hazard Report Transmitted!\nTicket Ref: ${ticketNo}\nStatus: PENDING TRIAGE`);
+      alert(`✓ Hazard Report Transmitted!\nTicket Ref: ${savedReport.ticket_no}\nStatus: PENDING TRIAGE`);
       if (onSubmitSuccess) onSubmitSuccess();
     } catch (err) {
       alert(`Submission failed: ${err.message}`);

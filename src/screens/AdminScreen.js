@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+import {
+  deleteRejectedReportsInDb,
+  fetchAdminReports,
+  updateReportStatusInDb,
+} from '../services/adminService';
 
 export default function AdminScreen({ onBack }) {
   const [currentView, setCurrentView] = useState('DASHBOARD');
@@ -20,11 +25,7 @@ export default function AdminScreen({ onBack }) {
   const fetchAdminData = async () => {
     setIsLoading(true);
     try {
-      const { data: repData } = await supabase
-        .from('reports')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (repData) setReports(repData);
+      setReports(await fetchAdminReports());
 
       const { data: profData } = await supabase
         .from('profiles')
@@ -39,16 +40,11 @@ export default function AdminScreen({ onBack }) {
 
   const handleUpdateReportStatus = async (reportId, newStatus) => {
     try {
-      const { error } = await supabase
-        .from('reports')
-        .update({ status: newStatus })
-        .eq('id', reportId);
-
-      if (error) throw error;
+      const updatedReport = await updateReportStatusInDb(reportId, newStatus);
 
       alert(`Report ticket ${reportId} stage updated to: ${newStatus}`);
       if (selectedReport && selectedReport.id === reportId) {
-        setSelectedReport({ ...selectedReport, status: newStatus });
+        setSelectedReport(updatedReport);
       }
       fetchAdminData();
     } catch (err) {
@@ -65,12 +61,7 @@ export default function AdminScreen({ onBack }) {
 
     if (window.confirm(`Confirmation Required: Are you sure you want to permanently delete all ${rejectedList.length} rejected report records? This database action cannot be undone.`)) {
       try {
-        const { error } = await supabase
-          .from('reports')
-          .delete()
-          .in('status', ['REJECTED', 'DELETED']);
-
-        if (error) throw error;
+        await deleteRejectedReportsInDb();
 
         alert('All rejected report records permanently deleted from database.');
         setSelectedReport(null);

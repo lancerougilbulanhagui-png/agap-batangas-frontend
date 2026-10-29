@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../supabaseClient';
+import { fetchReports } from '../services/reportService';
 
 export default function ReportTrackerScreen({ onBack }) {
   const [reports, setReports] = useState([]);
@@ -15,16 +15,7 @@ export default function ReportTrackerScreen({ onBack }) {
   const fetchUserSubmittedReports = async (targetDeviceId) => {
     setIsLoading(true);
     try {
-      let query = supabase.from('reports').select('*').order('created_at', { ascending: false });
-
-      if (targetDeviceId) {
-        query = query.eq('device_id', targetDeviceId);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      if (data) setReports(data);
+      setReports(await fetchReports({ deviceId: targetDeviceId }));
     } catch (err) {
       console.error('Tracker fetch error:', err.message);
     } finally {
